@@ -1,0 +1,12 @@
+# Dependencias (Se instalan con npm install)
+node_modules/
+dist/
+build/
+
+# Variables sensibles (Seguridad)
+.env
+.env.local
+
+# Archivos de sistema y logs
+npm-debug.log*
+.DS_Store
