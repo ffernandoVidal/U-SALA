@@ -1,71 +1,36 @@
-import { useState } from 'react'
-import { GoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
+import React, { useState } from 'react';
+import Dashboard from './components/Dashboard';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(""); // Estado para el mensaje de error
+  // Cambiamos el ID alfanumérico por un ID numérico entero (INT)
+  const [usuario, setUsuario] = useState({
+    id: 1, // <-- ID de tipo entero para cumplir con la FK de la base de datos
+    nombre_completo: "Dianne Russell",
+    email: "drussell@miumg.edu.gt",
+    rol: "admin",
+    picture: null
+  });
 
-  const responseMessage = async (response) => {
-    setErrorMsg(""); // Limpiamos errores previos al intentar de nuevo
-    try {
-      const res = await axios.post('http://localhost:3000/api/auth/google', {
-        token: response.credential
-      });
-      
-      console.log("Login exitoso:", res.data);
-      setUser(res.data.user);
-    } catch (error) {
-      console.error("Error en login:", error);
-      
-      // Lógica de mensajes de error personalizados
-      if (error.response && error.response.status === 403) {
-        setErrorMsg("Acceso fallido. Por favor, vuelve a intentarlo con un correo institucional @miumg.edu.gt");
-      } else {
-        setErrorMsg("Ocurrió un problema técnico. Intenta más tarde o verifica tu conexión.");
-      }
-    }
-  };
-
-  const errorMessage = () => {
-    setErrorMsg("Falla en la autenticación con Google. Intenta más tarde.");
+  const handleLogout = () => {
+    setUsuario(null);
   };
 
   return (
-    <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'Arial' }}>
-      <h1>Sistema de Reservas USALA - UMG</h1>
-      
-      {!user ? (
-        <div style={{ marginTop: '50px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
-          </div>
-
-          {/* Renderizado del mensaje de error solicitado */}
-          {errorMsg && (
-            <div style={{ 
-              marginTop: '20px', 
-              color: '#721c24', 
-              backgroundColor: '#f8d7da', 
-              padding: '10px', 
-              borderRadius: '5px',
-              display: 'inline-block',
-              border: '1px solid #f5c6cb'
-            }}>
-              {errorMsg}
-            </div>
-          )}
-        </div>
+    <div className="app-viewport" style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden' }}>
+      {usuario ? (
+        <Dashboard user={usuario} onLogout={handleLogout} />
       ) : (
-        <div>
-          <h2>Bienvenido, {user.nombre_completo}</h2>
-          <img src={user.picture || 'https://via.placeholder.com/100'} alt="perfil" style={{ borderRadius: '50%' }} />
-          <p>Correo: {user.email}</p>
-          <button onClick={() => { setUser(null); setErrorMsg(""); }}>Cerrar Sesión</button>
+        <div style={{ display: 'grid', placeItems: 'center', height: '100vh', backgroundColor: '#f4f5f6' }}>
+          <button 
+            onClick={() => setUsuario({ id: 1, nombre_completo: "Dianne Russell", email: "drussell@miumg.edu.gt", rol: "admin" })}
+            style={{ padding: '10px 20px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+          >
+            Volver a Ingresar (Mock)
+          </button>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

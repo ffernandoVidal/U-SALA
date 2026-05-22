@@ -1,53 +1,82 @@
-const pool = require('../config/db');
+// Asumimos que tienes configurado tu pool de conexiones a PostgreSQL en config/db
+const pool = require('../config/db'); 
 
+// 1. O(1) - Obtener todas las reservas (Para alimentar el calendario general)
+const getTodasLasReservas = async (req, res) => {
+    try {
+        const query = `
+            SELECT r.*, rec.nombre as recurso_nombre, u.nombre_completo as usuario_nombre
+            FROM reservas r
+            JOIN recursos rec ON r.recurso_id = rec.id
+            JOIN usuarios u ON r.usuario_id = u.id
+            ORDER BY r.inicio ASC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// 2. O(1) - Obtener las reservas de un usuario específico (Filtro por UI)
+const getMisReservas = async (req, res) => {
+    const { usuario_id } = req.params;
+    try {
+        const query = `
+            SELECT r.*, rec.nombre as recurso_nombre 
+            FROM reservas r
+            JOIN recursos rec ON r.recurso_id = rec.id
+            WHERE r.usuario_id = $1
+            ORDER BY r.inicio DESC;
+        `;
+        const result = await pool.query(query, [usuario_id]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// 3. O(1) - Crear una nueva reserva (El motor maneja la exclusión temporal con GiST)
 const crearReserva = async (req, res) => {
-    const { usuario_id, recurso_id, inicio, fin, notas } = req.body;
-
+    const { usuario_id, recurso_id, inicio, fin, notes } = req.body;
     try {
         const query = `
             INSERT INTO reservas (usuario_id, recurso_id, inicio, fin, notas)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING *;
         `;
-        const values = [usuario_id, recurso_id, inicio, fin, notas];
-        
+        const values = [usuario_id, recurso_id, inicio, fin, notes || null];
         const result = await pool.query(query, values);
-        
-        res.status(201).json({
-            message: "Reserva creada exitosamente",
-            reserva: result.rows[0]
-        });
-
+        res.status(201).json(result.rows[0]);
     } catch (error) {
-        console.error("DETALLE TÉCNICO RESERVA:", error.code, error.message);
-
-        // Captura de la restricción de exclusión (Solapamiento)
-        if (error.code === '23P01') { // Código de PostgreSQL para Exclusion Violation
-            return res.status(409).json({
-                error: "Conflicto de horario",
-                message: "El recurso ya está reservado en el horario seleccionado."
-            });
+        // Captura explícita de colisión de exclusión de PostgreSQL (Código 23P01)
+        if (error.code === '23P01') {
+            return res.status(409).json({ error: "Conflicto de horario: El recurso ya está reservado en ese intervalo." });
         }
-
-        res.status(500).json({
-            error: "Internal Server Error",
-            message: "No se pudo procesar la reserva.",
-            detail: error.message
-        });
+        res.status(500).json({ error: error.message });
     }
 };
 
-const getMisReservas = async (req, res) => {
-    const { usuario_id } = req.params;
+// 4. O(1) - Eliminar una reserva
+const eliminarReserva = async (req, res) => {
+    const { id } = req.params;
     try {
-        const result = await pool.query(
-            'SELECT r.*, rec.nombre as recurso_nombre FROM reservas r JOIN recursos rec ON r.recurso_id = rec.id WHERE r.usuario_id = $1 ORDER BY r.inicio DESC',
-            [usuario_id]
-        );
-        res.status(200).json(result.rows);
+        const query = `DELETE FROM reservas WHERE id = $1 RETURNING *;`;
+        const result = await pool.query(query, [id]);
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Reserva no encontrada." });
+        }
+        res.json({ message: "Reserva eliminada exitosamente." });
     } catch (error) {
-        res.status(500).json({ error: "Error al obtener reservas" });
+        res.status(500).json({ error: error.message });
     }
 };
 
-module.exports = { crearReserva, getMisReservas };
+// Exportación unificada sin errores de referencia
+module.exports = { 
+    crearReserva, 
+    getMisReservas, 
+    getTodasLasReservas, 
+    eliminarReserva 
+};

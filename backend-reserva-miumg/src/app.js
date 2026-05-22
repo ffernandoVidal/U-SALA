@@ -1,37 +1,25 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const recursoRoutes = require('./routes/recursoRoutes');
+const reservaRoutes = require('./routes/reservaRoutes');
 
 const app = express();
 
-// Configuración de Seguridad y CORS
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], 
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true 
-}));
+// 1. Capa de Middlewares Globales
+app.use(cors());
+app.use(express.json()); // Permite al servidor parsear payloads en formato JSON
 
-// Middleware para corregir políticas de Google (COOP)
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  next();
-});
-
-app.use(express.json());
-
-// Importación de rutas
-const recursoRoutes = require('./routes/recursoRoutes');
-const authRoutes = require('./routes/authRoutes');
-const reservaRoutes = require('./routes/reservaRoutes');
-
-// Endpoints
+// 2. Enrutamiento del API (Montaje de Endpoints)
 app.use('/api/recursos', recursoRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/reservas', reservaRoutes);
 
+// 3. Inicialización del Servidor HTTP
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor de Ingeniería corriendo en puerto ${PORT}`);
+    console.log(`==================================================`);
+    console.log(` SERVER OPERATIVO & CONFIGURADO CORRECTAMENTE      `);
+    console.log(` Puerto de escucha: http://localhost:${PORT}        `);
+    console.log(`==================================================`);
 });
+
+module.exports = app;

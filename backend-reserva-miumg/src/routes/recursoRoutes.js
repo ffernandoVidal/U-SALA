@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { getRecursos } = require('../controllers/recursoController');
+const { 
+    crearReserva, 
+    getMisReservas, 
+    eliminarReserva,
+    getTodasLasReservas // Necesaria para el Calendario
+} = require('../controllers/reservaController');
 
-// CORRECTO: Pasamos la referencia a la función
-router.get('/', getRecursos); 
+router.get('/', getTodasLasReservas);
+router.post('/', crearReserva);
+router.get('/usuario/:usuario_id', getMisReservas);
+router.delete('/:id', eliminarReserva);
 
-module.exports = router;
+module.exports = router;    
