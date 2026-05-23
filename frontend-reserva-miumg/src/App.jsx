@@ -1,36 +1,41 @@
-import React, { useState } from 'react';
-import Dashboard from './components/Dashboard';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
+import AdminDashboard from './components/AdminDashboard';
+import DocenteDashboard from './components/DocenteDashboard';
+import UsuarioDashboard from './components/UsuarioDashboard';
 
-function App() {
-  // Cambiamos el ID alfanumérico por un ID numérico entero (INT)
-  const [usuario, setUsuario] = useState({
-    id: 1, // <-- ID de tipo entero para cumplir con la FK de la base de datos
-    nombre_completo: "Dianne Russell",
-    email: "drussell@miumg.edu.gt",
-    rol: "admin",
-    picture: null
-  });
-
-  const handleLogout = () => {
-    setUsuario(null);
-  };
-
-  return (
-    <div className="app-viewport" style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden' }}>
-      {usuario ? (
-        <Dashboard user={usuario} onLogout={handleLogout} />
-      ) : (
-        <div style={{ display: 'grid', placeItems: 'center', height: '100vh', backgroundColor: '#f4f5f6' }}>
-          <button 
-            onClick={() => setUsuario({ id: 1, nombre_completo: "Dianne Russell", email: "drussell@miumg.edu.gt", rol: "admin" })}
-            style={{ padding: '10px 20px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-          >
-            Volver a Ingresar (Mock)
-          </button>
-        </div>
-      )}
-    </div>
-  );
+function AuthRedirect({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ display: 'grid', placeItems: 'center', height: '100vh' }}><p>Cargando...</p></div>;
+  if (user) return <Navigate to="/" replace />;
+  return children;
 }
 
-export default App;
+function HomePage() {
+  const { user, logout } = useAuth();
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  const dashboards = {
+    1: AdminDashboard,
+    2: DocenteDashboard,
+    3: UsuarioDashboard,
+  };
+
+  const DashboardComponent = dashboards[user.role_id] || UsuarioDashboard;
+  return <DashboardComponent user={user} onLogout={logout} />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<AuthRedirect><LoginPage /></AuthRedirect>} />
+      <Route path="/register" element={<AuthRedirect><RegisterPage /></AuthRedirect>} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

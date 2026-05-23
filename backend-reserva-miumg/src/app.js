@@ -2,18 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const recursoRoutes = require('./routes/recursoRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-// 1. Capa de Middlewares Globales
 app.use(cors());
-app.use(express.json()); // Permite al servidor parsear payloads en formato JSON
+app.use(express.json());
 
-// 2. Enrutamiento del API (Montaje de Endpoints)
+app.use('/api/auth', authRoutes);
 app.use('/api/recursos', recursoRoutes);
 app.use('/api/reservas', reservaRoutes);
 
-// 3. Inicialización del Servidor HTTP
+app.use((err, req, res, next) => {
+    console.error('Error:', err.message);
+    res.status(err.status || 500).json({ error: err.message || 'Error interno del servidor' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`==================================================`);

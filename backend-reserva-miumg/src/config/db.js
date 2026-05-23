@@ -3,17 +3,16 @@ require('dotenv').config();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    // Eliminamos configuraciones extra para asegurar conectividad base (O(1))
 });
 
-// Verificación de salud de la conexión
 pool.on('connect', () => {
-    console.log('✅ Conexión exitosa a PostgreSQL (USALADB)');
+    console.log('Conectado a PostgreSQL (USALADB)');
 });
 
 pool.on('error', (err) => {
-    console.error('❌ Error inesperado en el pool de conexiones:', err);
+    console.error('Error en el pool de conexiones:', err);
 });
 
-module.exports = pool; // Exportación directa
+const query = (text, params) => pool.query(text, params);
 
+module.exports = { pool, query };
