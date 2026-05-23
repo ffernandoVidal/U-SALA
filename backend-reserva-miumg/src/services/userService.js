@@ -53,4 +53,43 @@ const findUserById = async (id) => {
   return result.rows[0] || null;
 };
 
-module.exports = { findOrCreateUser, createUser, findUserByEmail, findUserByGoogleId, findUserById };
+const findAllUsers = async () => {
+  const result = await query(
+    `SELECT u.id, u.email, u.nombre_completo, u.role_id, r.nombre as role_nombre
+     FROM usuarios u
+     JOIN roles r ON u.role_id = r.id
+     ORDER BY u.id ASC`
+  );
+  return result.rows;
+};
+
+const updateUser = async (id, { nombre_completo, email, role_id }) => {
+  const fields = [];
+  const values = [];
+  let idx = 1;
+
+  if (nombre_completo !== undefined) {
+    fields.push(`nombre_completo = $${idx++}`);
+    values.push(nombre_completo);
+  }
+  if (email !== undefined) {
+    fields.push(`email = $${idx++}`);
+    values.push(email);
+  }
+  if (role_id !== undefined) {
+    fields.push(`role_id = $${idx++}`);
+    values.push(role_id);
+  }
+
+  if (fields.length === 0) return null;
+
+  values.push(id);
+
+  const result = await query(
+    `UPDATE usuarios SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
+    values
+  );
+  return result.rows[0] || null;
+};
+
+module.exports = { findOrCreateUser, createUser, findUserByEmail, findUserByGoogleId, findUserById, findAllUsers, updateUser };

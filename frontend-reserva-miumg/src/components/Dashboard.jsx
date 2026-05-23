@@ -7,6 +7,7 @@ import {
   Users, BarChart3, LogOut, Bell, Plus, X, AlertCircle, Clock, User, FileText
 } from 'lucide-react';
 import axios from 'axios';
+import AdminUsers from './AdminUsers';
 
 const Dashboard = ({ user, onLogout }) => {
   const [eventos, setEventos] = useState([]);
@@ -156,7 +157,7 @@ const Dashboard = ({ user, onLogout }) => {
 
   const styles = {
     layout: { display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#ffffff', color: '#1e293b', overflow: 'hidden', margin: 0, padding: 0 },
-    sidebar: { width: '260px', backgroundColor: '#f4f5f6', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 16px', height: '100%' },
+    sidebar: { width: '260px', backgroundColor: '#f4f5f6', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', padding: '24px 16px', height: '100%' },
     brandArea: { display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '8px', marginBottom: '32px' },
     brandIcon: { width: '32px', height: '32px', backgroundColor: '#6366f1', borderRadius: '8px', display: 'grid', placeItems: 'center', color: '#ffffff', fontWeight: '700' },
     navLink: (activo) => ({ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', borderRadius: '8px', color: activo ? '#0f172a' : '#475569', backgroundColor: activo ? '#ffffff' : 'transparent', boxShadow: activo ? '0 1px 3px rgba(0,0,0,0.05)' : 'none', fontWeight: activo ? '600' : '500', fontSize: '14px', cursor: 'pointer' }),
@@ -203,9 +204,6 @@ const Dashboard = ({ user, onLogout }) => {
             <div onClick={() => setVistaActiva('reportes')} style={styles.navLink(vistaActiva === 'reportes')}><BarChart3 size={18} /> Reportes</div>
           </nav>
         </div>
-        <div>
-          <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
-        </div>
       </aside>
 
       {/* ÁREA CONTENEDORA PRINCIPAL */}
@@ -215,10 +213,12 @@ const Dashboard = ({ user, onLogout }) => {
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Panel de Control</span>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>Reservación de Espacios</h1>
           </div>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>{user.nombre_completo}</span>
             <button onClick={() => setMostrarFormulario(!mostrarFormulario)} style={styles.btnPrimary}>
               <Plus size={16} /> Nueva Reserva
             </button>
+            <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 14px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
           </div>
         </header>
 
@@ -252,6 +252,8 @@ const Dashboard = ({ user, onLogout }) => {
                   }}
                 />
               </div>
+            ) : vistaActiva === 'usuarios' ? (
+              <AdminUsers />
             ) : (
               <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px', textAlign: 'left' }}>
                 <h3 style={{ margin: 0, fontSize: '16px', textTransform: 'capitalize' }}>Sección {vistaActiva}</h3>

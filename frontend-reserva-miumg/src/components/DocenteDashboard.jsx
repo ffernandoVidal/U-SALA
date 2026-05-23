@@ -105,7 +105,7 @@ export default function DocenteDashboard({ user, onLogout }) {
 
   const s = {
     layout: { display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#ffffff', color: '#1e293b', overflow: 'hidden' },
-    sidebar: { width: '240px', backgroundColor: '#f4f5f6', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 16px' },
+    sidebar: { width: '240px', backgroundColor: '#f4f5f6', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', padding: '24px 16px' },
     main: { flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' },
     topBar: { height: '70px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px' },
     workspace: { flex: 1, padding: '32px', overflowY: 'auto', backgroundColor: '#f8fafc' },
@@ -131,13 +131,6 @@ export default function DocenteDashboard({ user, onLogout }) {
             ))}
           </nav>
         </div>
-        <div>
-          <div style={{ padding: '12px 0', borderTop: '1px solid #e5e7eb', marginBottom: '12px' }}>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>{user.nombre_completo}</p>
-            <p style={{ fontSize: '11px', color: '#6366f1', margin: 0, fontWeight: '600' }}>Docente</p>
-          </div>
-          <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
-        </div>
       </aside>
 
       <div style={s.main}>
@@ -146,9 +139,13 @@ export default function DocenteDashboard({ user, onLogout }) {
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Panel Docente</span>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>Reservación de Espacios</h1>
           </div>
-          <button onClick={() => setMostrarFormulario(!mostrarFormulario)} style={s.btnPrimary}>
-            <Plus size={16} /> Nueva Reserva
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>{user.nombre_completo}</span>
+            <button onClick={() => setMostrarFormulario(!mostrarFormulario)} style={s.btnPrimary}>
+              <Plus size={16} /> Nueva Reserva
+            </button>
+            <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 14px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
+          </div>
         </header>
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

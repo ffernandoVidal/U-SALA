@@ -30,7 +30,7 @@ export default function UsuarioDashboard({ user, onLogout }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <aside style={{ width: '240px', backgroundColor: '#ffffff', borderRight: '1px solid #e5e7eb', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <aside style={{ width: '240px', backgroundColor: '#ffffff', borderRight: '1px solid #e5e7eb', padding: '24px 16px', display: 'flex', flexDirection: 'column' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
             <div style={{ width: '32px', height: '32px', backgroundColor: '#6366f1', borderRadius: '8px', display: 'grid', placeItems: 'center', color: '#ffffff', fontWeight: '700' }}>U</div>
@@ -43,19 +43,18 @@ export default function UsuarioDashboard({ user, onLogout }) {
             <CalendarCheck size={18} /> Mis Reservas
           </div>
         </div>
-        <div>
-          <div style={{ padding: '12px 0', borderTop: '1px solid #e5e7eb', marginBottom: '12px' }}>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>{user.nombre_completo}</p>
-            <p style={{ fontSize: '11px', color: '#6366f1', margin: 0, fontWeight: '600' }}>{user.email}</p>
-          </div>
-          <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '10px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
-        </div>
       </aside>
 
       <main style={{ flex: 1, padding: '32px' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#0f172a' }}>Mis Reservas</h1>
-          <p style={{ fontSize: '14px', color: '#64748b', margin: '4px 0 0' }}>Historial de tus reservaciones</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', margin: 0, color: '#0f172a' }}>Mis Reservas</h1>
+            <p style={{ fontSize: '14px', color: '#64748b', margin: '4px 0 0' }}>Historial de tus reservaciones</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>{user.nombre_completo}</span>
+            <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 14px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}><LogOut size={14} /> Cerrar sesión</button>
+          </div>
         </div>
 
         {reservas.length === 0 ? (
