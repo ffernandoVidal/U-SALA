@@ -23,3 +23,38 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
 CREATE INDEX IF NOT EXISTS idx_usuarios_google_id ON usuarios(google_id);
+
+-- Tabla de Recursos
+CREATE TABLE IF NOT EXISTS recursos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    ubicacion VARCHAR(255),
+    capacidad INTEGER,
+    esta_activo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_recursos_nombre ON recursos(nombre);
+CREATE INDEX IF NOT EXISTS idx_recursos_esta_activo ON recursos(esta_activo);
+
+-- Tabla de Reservas
+CREATE TABLE IF NOT EXISTS reservas (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    recurso_id INTEGER NOT NULL REFERENCES recursos(id) ON DELETE CASCADE,
+    inicio TIMESTAMP NOT NULL,
+    fin TIMESTAMP NOT NULL,
+    notas TEXT,
+    estado VARCHAR(50) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'confirmada', 'cancelada')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT no_overlap UNIQUE (recurso_id, inicio, fin),
+    CONSTRAINT valid_times CHECK (fin > inicio)
+);
+
+CREATE INDEX IF NOT EXISTS idx_reservas_usuario ON reservas(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_recurso ON reservas(recurso_id);
+CREATE INDEX IF NOT EXISTS idx_reservas_inicio_fin ON reservas(inicio, fin);
+CREATE INDEX IF NOT EXISTS idx_reservas_estado ON reservas(estado);

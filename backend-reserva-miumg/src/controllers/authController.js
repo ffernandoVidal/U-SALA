@@ -50,8 +50,12 @@ const register = async (req, res, next) => {
     });
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  // Validación más fuerte: mínimo 8 caracteres, 1 mayúscula, 1 número, 1 símbolo
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      error: 'La contraseña debe tener al menos 8 caracteres, incluir mayúscula, número y símbolo (@$!%*?&)'
+    });
   }
 
   try {

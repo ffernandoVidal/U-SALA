@@ -4,7 +4,7 @@ const generateToken = (user) => {
   return jwt.sign(
     { userId: user.id, role: user.role_id, email: user.email },
     process.env.JWT_SECRET,
-    { expiresIn: '8h' }
+    { expiresIn: '1h' } // Cambiar de 8h a 1h para mejor seguridad
   );
 };
 
