@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const { findUserById } = require('../services/userService');
-const { ROLES } = require('../config/roles');
 
 const authenticate = async (req, res, next) => {
   const header = req.headers.authorization;

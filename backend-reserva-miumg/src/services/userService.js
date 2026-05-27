@@ -38,11 +38,6 @@ const findUserByEmail = async (email) => {
   return result.rows[0] || null;
 };
 
-const findUserByGoogleId = async (google_id) => {
-  const result = await query('SELECT * FROM usuarios WHERE google_id = $1', [google_id]);
-  return result.rows[0] || null;
-};
-
 const findUserById = async (id) => {
   const result = await query(
     `SELECT u.*, r.nombre as role_nombre FROM usuarios u
@@ -92,4 +87,4 @@ const updateUser = async (id, { nombre_completo, email, role_id }) => {
   return result.rows[0] || null;
 };
 
-module.exports = { findOrCreateUser, createUser, findUserByEmail, findUserByGoogleId, findUserById, findAllUsers, updateUser };
+module.exports = { findOrCreateUser, createUser, findUserByEmail, findUserById, findAllUsers, updateUser };

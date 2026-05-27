@@ -2,7 +2,7 @@ import axios from 'axios';
 import API_BASE_URL from '../config/api';
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/usuarios`,
+  baseURL: `${API_BASE_URL}/recursos`,
 });
 
 api.interceptors.request.use((config) => {
@@ -13,12 +13,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const getUsuarios = async () => {
+export const getRecursos = async () => {
   const res = await api.get('/');
-  return res.data;
-};
-
-export const updateUsuario = async (id, data) => {
-  const res = await api.put(`/${id}`, data);
   return res.data;
 };

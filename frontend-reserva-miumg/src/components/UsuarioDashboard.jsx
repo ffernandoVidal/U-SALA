@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react';
-import { LogOut, CalendarCheck, Clock, User as UserIcon, FileText, X } from 'lucide-react';
-import axios from 'axios';
-
-const API = 'http://localhost:3000/api';
+import { LogOut, CalendarCheck, Clock, FileText, X } from 'lucide-react';
+import { getMisReservas } from '../services/reservaService';
 
 export default function UsuarioDashboard({ user, onLogout }) {
   const [reservas, setReservas] = useState([]);
   const [detalle, setDetalle] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    axios.get(`${API}/reservas/usuario/${user.id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setReservas(res.data)).catch(() => {});
+    getMisReservas(user.id)
+      .then(setReservas)
+      .catch(() => {});
   }, [user.id]);
 
   const formatearFecha = (str) =>

@@ -42,6 +42,12 @@ export function AuthProvider({ children }) {
     handleAuthSuccess(data);
   }, [handleAuthSuccess]);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  }, []);
+
   const refreshUser = useCallback(async () => {
     try {
       const data = await getMe();
@@ -50,13 +56,7 @@ export function AuthProvider({ children }) {
     } catch {
       logout();
     }
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  }, []);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{
@@ -73,6 +73,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');

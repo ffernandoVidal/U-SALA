@@ -1,25 +1,12 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const { findOrCreateUser, createUser, findUserByEmail } = require('../services/userService');
+const { generateToken, sanitizeUser } = require('../services/authService');
 const { ROLES } = require('../config/roles');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const generateToken = (user) => {
-  return jwt.sign(
-    { userId: user.id, role: user.role_id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: '8h' }
-  );
-};
-
-const sanitizeUser = (user) => {
-  const { password_hash, ...safeUser } = user;
-  return safeUser;
-};
-
-const googleLogin = async (req, res) => {
+const googleLogin = async (req, res, next) => {
   const { token } = req.body;
 
   try {
@@ -46,12 +33,11 @@ const googleLogin = async (req, res) => {
     const internalToken = generateToken(user);
     res.json({ token: internalToken, user: sanitizeUser(user) });
   } catch (error) {
-    console.error('Error en Google Auth:', error.message);
-    res.status(401).json({ error: 'Token de Google inválido' });
+    next(error);
   }
 };
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   const { email, nombre_completo, password, role_id } = req.body;
 
   if (!email || !nombre_completo || !password) {
@@ -85,12 +71,11 @@ const register = async (req, res) => {
     const internalToken = generateToken(user);
     res.status(201).json({ token: internalToken, user: sanitizeUser(user) });
   } catch (error) {
-    console.error('Error en registro:', error.message);
-    res.status(500).json({ error: 'Error al registrar usuario' });
+    next(error);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -117,8 +102,7 @@ const login = async (req, res) => {
     const internalToken = generateToken(user);
     res.json({ token: internalToken, user: sanitizeUser(user) });
   } catch (error) {
-    console.error('Error en login:', error.message);
-    res.status(500).json({ error: 'Error al iniciar sesión' });
+    next(error);
   }
 };
 
