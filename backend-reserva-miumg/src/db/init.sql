@@ -58,3 +58,15 @@ CREATE INDEX IF NOT EXISTS idx_reservas_usuario ON reservas(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_reservas_recurso ON reservas(recurso_id);
 CREATE INDEX IF NOT EXISTS idx_reservas_inicio_fin ON reservas(inicio, fin);
 CREATE INDEX IF NOT EXISTS idx_reservas_estado ON reservas(estado);
+
+CREATE TABLE IF NOT EXISTS reset_tokens (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token ON reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_usuario_id ON reset_tokens(usuario_id);

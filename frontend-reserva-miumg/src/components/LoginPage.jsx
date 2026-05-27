@@ -134,7 +134,7 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
                   Contraseña
                 </label>
@@ -146,6 +146,11 @@ export default function LoginPage() {
                   style={styles.input}
                   required
                 />
+              </div>
+              <div style={{ textAlign: 'right', marginBottom: '24px' }}>
+                <Link to="/forgot-password" style={{ fontSize: '13px', color: '#6366f1', fontWeight: '500', textDecoration: 'none' }}>
+                  ¿Olvidaste tu contraseña?
+                </Link>
               </div>
               <button type="submit" style={styles.btn}>
                 Iniciar Sesión
