@@ -27,16 +27,22 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_google_id ON usuarios(google_id);
 -- Tabla de Recursos
 CREATE TABLE IF NOT EXISTS recursos (
     id SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) UNIQUE NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     descripcion TEXT,
+    tipo VARCHAR(50) NOT NULL DEFAULT 'SALON',
     ubicacion VARCHAR(255),
     capacidad INTEGER,
+    estado VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE',
     esta_activo BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_recursos_nombre ON recursos(nombre);
+CREATE INDEX IF NOT EXISTS idx_recursos_codigo ON recursos(codigo);
+CREATE INDEX IF NOT EXISTS idx_recursos_tipo ON recursos(tipo);
+CREATE INDEX IF NOT EXISTS idx_recursos_estado ON recursos(estado);
 CREATE INDEX IF NOT EXISTS idx_recursos_esta_activo ON recursos(esta_activo);
 
 -- Tabla de Reservas

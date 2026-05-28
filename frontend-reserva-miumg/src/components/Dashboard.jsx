@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getReservas } from '../services/reservaService';
-import { getRecursos } from '../services/recursoService';
+import { getRecursosActivos } from '../services/recursoService';
 import { crearReserva } from '../services/reservaService';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -8,6 +8,7 @@ import CalendarView from './CalendarView';
 import ReservaForm from './ReservaForm';
 import ReservaModal from './ReservaModal';
 import AdminUsers from './AdminUsers';
+import ResourcesView from './ResourcesView';
 
 const formatearEventos = (reservas) =>
   reservas.map(r => ({
@@ -69,7 +70,7 @@ export default function Dashboard({ user, onLogout }) {
     try {
       const [reservas, recursosData] = await Promise.all([
         getReservas(),
-        getRecursos(),
+        getRecursosActivos(),
       ]);
       setEventos(formatearEventos(reservas));
       setRecursos(recursosData);
@@ -143,7 +144,9 @@ export default function Dashboard({ user, onLogout }) {
         <Header
           user={user}
           onLogout={onLogout}
-          onNuevaReserva={() => setMostrarFormulario(!mostrarFormulario)}
+          onNuevaReserva={vistaActiva === 'calendario' ? () => setMostrarFormulario(!mostrarFormulario) : undefined}
+          titulo={vistaActiva === 'recursos' ? 'Gestión de Recursos' : vistaActiva === 'usuarios' ? 'Gestión de Usuarios' : undefined}
+          subtitulo={vistaActiva === 'recursos' ? 'Administración' : vistaActiva === 'usuarios' ? 'Administración' : undefined}
         />
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', backgroundColor: '#f8fafc' }}>
@@ -157,6 +160,8 @@ export default function Dashboard({ user, onLogout }) {
                 }}
                 onEventClick={(info) => setReservaSeleccionada(info.event.extendedProps)}
               />
+            ) : vistaActiva === 'recursos' ? (
+              <ResourcesView />
             ) : vistaActiva === 'usuarios' ? (
               <AdminUsers />
             ) : vistaActiva === 'reservas' ? (
