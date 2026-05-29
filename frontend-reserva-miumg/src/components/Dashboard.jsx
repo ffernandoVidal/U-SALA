@@ -9,6 +9,7 @@ import ReservaForm from './ReservaForm';
 import ReservaModal from './ReservaModal';
 import AdminUsers from './AdminUsers';
 import ResourcesView from './ResourcesView';
+import UnderConstructionModal from './UnderConstructionModal';
 
 const formatearEventos = (reservas) =>
   reservas.map(r => ({
@@ -65,6 +66,7 @@ export default function Dashboard({ user, onLogout }) {
   });
   const [errorValidacion, setErrorValidacion] = useState('');
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
+  const [modalConstruccion, setModalConstruccion] = useState(null);
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -84,6 +86,12 @@ export default function Dashboard({ user, onLogout }) {
     cargarDatos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (vistaActiva === 'dashboard') setModalConstruccion('Dashboard');
+    else if (vistaActiva === 'reportes') setModalConstruccion('Reportes');
+    else setModalConstruccion(null);
+  }, [vistaActiva]);
 
   const verificarColisionLocal = (nuevoInicioStr, nuevoFinStr, recursoId) => {
     const tNuevaInicio = new Date(nuevoInicioStr).getTime();
@@ -188,6 +196,11 @@ export default function Dashboard({ user, onLogout }) {
         <ReservaModal
           reserva={reservaSeleccionada}
           onClose={() => setReservaSeleccionada(null)}
+        />
+
+        <UnderConstructionModal
+          titulo={modalConstruccion ? `${modalConstruccion} — Estamos trabajando en ello` : null}
+          onClose={() => setModalConstruccion(null)}
         />
       </div>
     </div>

@@ -19,6 +19,9 @@ const migrate = async () => {
     await query(`ALTER TABLE recursos ADD COLUMN IF NOT EXISTS estado VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE'`);
     console.log('  estado añadido a recursos');
 
+    await query(`ALTER TABLE recursos ADD COLUMN IF NOT EXISTS ubicacion VARCHAR(255)`);
+    console.log('  ubicacion añadido a recursos');
+
     await query(`ALTER TABLE recursos ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`);
     console.log('  updated_at añadido a recursos');
 
