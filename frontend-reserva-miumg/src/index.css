@@ -61,3 +61,8 @@ html, body, #root {
 .fc-theme-standard td, .fc-theme-standard th {
   border: 1px solid #e2e8f0 !important;
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getReservas } from '../services/reservaService';
+import { RefreshCw } from 'lucide-react';
+import { getReservas, crearReserva, aprobarReserva, rechazarReserva, cancelarReserva } from '../services/reservaService';
 import { getRecursosActivos } from '../services/recursoService';
-import { crearReserva } from '../services/reservaService';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import CalendarView from './CalendarView';
@@ -17,43 +17,22 @@ const formatearEventos = (reservas) =>
     title: r.recurso_nombre || `Recurso #${r.recurso_id}`,
     start: r.inicio,
     end: r.fin,
-    backgroundColor: r.estado === 'aprobada' ? '#dcfce7' : r.estado === 'rechazada' ? '#fee2e2' : '#fef9c3',
-    borderColor: r.estado === 'aprobada' ? '#22c55e' : r.estado === 'rechazada' ? '#ef4444' : '#eab308',
-    textColor: r.estado === 'aprobada' ? '#166534' : r.estado === 'rechazada' ? '#991b1b' : '#854d0e',
+    backgroundColor: r.estado === 'aprobada' ? '#dcfce7' : r.estado === 'rechazada' ? '#fee2e2' : r.estado === 'cancelada' ? '#f1f5f9' : '#fef9c3',
+    borderColor: r.estado === 'aprobada' ? '#22c55e' : r.estado === 'rechazada' ? '#ef4444' : r.estado === 'cancelada' ? '#94a3b8' : '#eab308',
+    textColor: r.estado === 'aprobada' ? '#166534' : r.estado === 'rechazada' ? '#991b1b' : r.estado === 'cancelada' ? '#475569' : '#854d0e',
     extendedProps: {
-      recurso_id: r.recurso_id,
+      ...r,
       recurso_nombre: r.recurso_nombre || `Recurso #${r.recurso_id}`,
       usuario_nombre: r.usuario_nombre || 'Usuario U-SALA',
-      ubicacion: r.ubicacion || 'Edificio Asignado',
+      ubicacion: r.recurso_ubicacion || 'Edificio Asignado',
       notas: r.notas,
+      motivo: r.motivo,
       estado: r.estado,
       inicioStr: r.inicio,
       finStr: r.fin,
+      usuario_id: r.usuario_id,
     },
   }));
-
-const datosMock = {
-  recursos: [
-    { id: 1, nombre: 'Laboratorio de Computación 1', ubicacion: 'Edificio B - Segundo Piso' },
-    { id: 2, nombre: 'Auditorio Principal', ubicacion: 'Edificio A - Primer Piso' },
-    { id: 3, nombre: 'Sala de Conferencias A', ubicacion: 'Edificio C' },
-  ],
-  eventos: [{
-    id: 101,
-    title: 'Laboratorio de Computación 1',
-    start: '2026-05-12T14:00:00',
-    end: '2026-05-12T16:00:00',
-    backgroundColor: '#dcfce7',
-    borderColor: '#22c55e',
-    textColor: '#166534',
-    extendedProps: {
-      recurso_id: 1, recurso_nombre: 'Laboratorio de Computación 1',
-      usuario_nombre: 'María García', ubicacion: 'Edificio B - Segundo Piso',
-      notas: 'Práctica de programación del curso de Sistemas Operativos.',
-      estado: 'aprobada', inicioStr: '2026-05-12T14:00:00', finStr: '2026-05-12T16:00:00',
-    },
-  }],
-};
 
 export default function Dashboard({ user, onLogout }) {
   const [eventos, setEventos] = useState([]);
@@ -77,8 +56,7 @@ export default function Dashboard({ user, onLogout }) {
       setEventos(formatearEventos(reservas));
       setRecursos(recursosData);
     } catch {
-      setRecursos(datosMock.recursos);
-      setEventos(datosMock.eventos);
+      // silent fallback
     }
   }, []);
 
@@ -93,18 +71,6 @@ export default function Dashboard({ user, onLogout }) {
     else setModalConstruccion(null);
   }, [vistaActiva]);
 
-  const verificarColisionLocal = (nuevoInicioStr, nuevoFinStr, recursoId) => {
-    const tNuevaInicio = new Date(nuevoInicioStr).getTime();
-    const tNuevaFin = new Date(nuevoFinStr).getTime();
-    return eventos.some(ev => {
-      if (ev.extendedProps.estado === 'rechazada' || ev.extendedProps.estado === 'cancelada') return false;
-      if (Number(ev.extendedProps.recurso_id) !== Number(recursoId)) return false;
-      const tEvInicio = new Date(ev.start).getTime();
-      const tEvFin = new Date(ev.end).getTime();
-      return tNuevaInicio < tEvFin && tNuevaFin > tEvInicio;
-    });
-  };
-
   const handleCrearReserva = async (e) => {
     e.preventDefault();
     setErrorValidacion('');
@@ -112,12 +78,7 @@ export default function Dashboard({ user, onLogout }) {
     const fin = `${formData.fecha}T${formData.hora_fin}:00`;
 
     if (new Date(inicio) >= new Date(fin)) {
-      setErrorValidacion('La hora de inicio debe ser cronológicamente menor a la hora de finalización.');
-      return;
-    }
-
-    if (verificarColisionLocal(inicio, fin, formData.recurso_id)) {
-      setErrorValidacion('Conflicto de disponibilidad: El recurso seleccionado ya se encuentra reservado.');
+      setErrorValidacion('La hora de inicio debe ser anterior a la hora de finalización.');
       return;
     }
 
@@ -128,12 +89,43 @@ export default function Dashboard({ user, onLogout }) {
         inicio,
         fin,
         notes: formData.motivo,
+        motivo: formData.motivo,
       });
       setMostrarFormulario(false);
       setFormData({ recurso_id: '', fecha: new Date().toISOString().split('T')[0], hora_inicio: '', hora_fin: '', motivo: '' });
-      cargarDatos();
+      await cargarDatos();
     } catch (error) {
-      setErrorValidacion(error.response?.data?.error || 'Error de integridad referencial.');
+      setErrorValidacion(error.response?.data?.error || 'Error al crear la reserva.');
+    }
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await aprobarReserva(id);
+      setReservaSeleccionada(null);
+      await cargarDatos();
+    } catch (error) {
+      setErrorValidacion(error.response?.data?.error || 'Error al aprobar la reserva');
+    }
+  };
+
+  const handleReject = async (id, motivo) => {
+    try {
+      await rechazarReserva(id, motivo);
+      setReservaSeleccionada(null);
+      await cargarDatos();
+    } catch (error) {
+      setErrorValidacion(error.response?.data?.error || 'Error al rechazar la reserva');
+    }
+  };
+
+  const handleCancel = async (id) => {
+    try {
+      await cancelarReserva(id, 'Cancelado por el administrador');
+      setReservaSeleccionada(null);
+      await cargarDatos();
+    } catch (error) {
+      setErrorValidacion(error.response?.data?.error || 'Error al cancelar la reserva');
     }
   };
 
@@ -159,6 +151,19 @@ export default function Dashboard({ user, onLogout }) {
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden', backgroundColor: '#f8fafc' }}>
           <section style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+              <button
+                onClick={cargarDatos}
+                title="Actualizar"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 14px', borderRadius: '8px', border: '1px solid #e2e8f0',
+                  backgroundColor: '#ffffff', cursor: 'pointer', fontWeight: '500', fontSize: '13px', color: '#475569',
+                }}
+              >
+                <RefreshCw size={14} /> Actualizar
+              </button>
+            </div>
             {vistaActiva === 'calendario' ? (
               <CalendarView
                 eventos={eventos}
@@ -174,8 +179,38 @@ export default function Dashboard({ user, onLogout }) {
               <AdminUsers />
             ) : vistaActiva === 'reservas' ? (
               <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Mis Reservas</h3>
-                <p style={{ color: '#64748b', fontSize: '13px' }}>Próximamente podrás ver tus reservas aquí.</p>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Todas las Reservas</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+                  {eventos.length === 0 ? (
+                    <p style={{ color: '#64748b', fontSize: '13px' }}>No hay reservas registradas.</p>
+                  ) : (
+                    eventos.map(ev => (
+                      <div
+                        key={ev.id}
+                        onClick={() => setReservaSeleccionada(ev.extendedProps)}
+                        style={{
+                          padding: '12px 16px', border: '1px solid #e2e8f0', borderRadius: '10px',
+                          cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontWeight: '600', fontSize: '14px' }}>{ev.title}</span>
+                          <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '12px' }}>
+                            {new Date(ev.start).toLocaleDateString('es-GT')} {new Date(ev.start).toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })} - {new Date(ev.end).toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <span style={{
+                          padding: '2px 10px', borderRadius: '30px', fontSize: '11px', fontWeight: '600',
+                          textTransform: 'capitalize',
+                          backgroundColor: ev.extendedProps.estado === 'aprobada' ? '#dcfce7' : ev.extendedProps.estado === 'rechazada' ? '#fee2e2' : '#fef9c3',
+                          color: ev.extendedProps.estado === 'aprobada' ? '#15803d' : ev.extendedProps.estado === 'rechazada' ? '#b91c1c' : '#a16207',
+                        }}>
+                          {ev.extendedProps.estado}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             ) : (
               vistaPlaceholder
@@ -190,12 +225,17 @@ export default function Dashboard({ user, onLogout }) {
             recursos={recursos}
             errorValidacion={errorValidacion}
             onSubmit={handleCrearReserva}
+            user={user}
           />
         </div>
 
         <ReservaModal
           reserva={reservaSeleccionada}
           onClose={() => setReservaSeleccionada(null)}
+          user={user}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onCancel={handleCancel}
         />
 
         <UnderConstructionModal

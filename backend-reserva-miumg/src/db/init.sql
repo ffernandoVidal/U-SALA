@@ -53,17 +53,25 @@ CREATE TABLE IF NOT EXISTS reservas (
     inicio TIMESTAMP NOT NULL,
     fin TIMESTAMP NOT NULL,
     notas TEXT,
-    estado VARCHAR(50) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'confirmada', 'cancelada')),
+    motivo TEXT,
+    estado VARCHAR(50) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'aprobada', 'rechazada', 'cancelada', 'finalizada')),
+    rechazo_motivo TEXT,
+    cancelacion_motivo TEXT,
+    aprobado_por INTEGER REFERENCES usuarios(id),
+    rechazado_por INTEGER REFERENCES usuarios(id),
+    cancelado_por INTEGER REFERENCES usuarios(id),
+    created_by INTEGER REFERENCES usuarios(id),
+    updated_by INTEGER REFERENCES usuarios(id),
+    deleted_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT no_overlap UNIQUE (recurso_id, inicio, fin),
     CONSTRAINT valid_times CHECK (fin > inicio)
 );
 
 CREATE INDEX IF NOT EXISTS idx_reservas_usuario ON reservas(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_reservas_recurso ON reservas(recurso_id);
-CREATE INDEX IF NOT EXISTS idx_reservas_inicio_fin ON reservas(inicio, fin);
 CREATE INDEX IF NOT EXISTS idx_reservas_estado ON reservas(estado);
+CREATE INDEX IF NOT EXISTS idx_reservas_disponibilidad ON reservas(recurso_id, inicio, fin) WHERE estado IN ('pendiente', 'aprobada');
 
 CREATE TABLE IF NOT EXISTS reset_tokens (
     id SERIAL PRIMARY KEY,
